@@ -1,0 +1,30 @@
+[
+  {
+    "question": "How do I return a product?",
+    "answer": "To return a product, visit your orders page and click 'Return'."
+  },
+  {
+    "question": "What payment methods are accepted?",
+    "answer": "We accept credit/debit cards, UPI, and net banking."
+  },
+  {
+    "question": "How long does shipping take?",
+    "answer": "Shipping usually takes 3-5 business days."
+  },
+  {
+    "question": "How do I track my order?",
+    "answer": "Go to your orders page and click on 'Track Order' next to your purchase."
+  },
+  {
+    "question": "Can I change my shipping address after placing an order?",
+    "answer": "You can change your shipping address before the order is shipped by contacting support."
+  },
+  {
+    "question": "What are the terms and conditions?",
+    "answer": "Our terms and conditions include: 1) All sales are final. 2) Products must not be resold. 3) Use of the website constitutes acceptance of all terms. For full terms, visit our Terms & Conditions page."
+  },
+  {
+    "question": "What is your privacy policy?",
+    "answer": "We value your privacy. We do not share your personal information with third parties except as required by law. For details, see our Privacy Policy page."
+  }
+]

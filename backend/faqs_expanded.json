@@ -1,0 +1,72 @@
+[
+  {
+    "question": [
+      "How do I return a product?",
+      "How can I send an item back?",
+      "What is the process for returns?",
+      "I want to return my order, what should I do?",
+      "How to initiate a return?"
+    ],
+    "answer": "To return a product, visit your orders page and click 'Return'."
+  },
+  {
+    "question": [
+      "What payment methods are accepted?",
+      "How can I pay?",
+      "Which payment options are available?",
+      "Can I use UPI or cards?",
+      "Do you accept debit or credit cards?"
+    ],
+    "answer": "We accept credit/debit cards, UPI, and net banking."
+  },
+  {
+    "question": [
+      "How long does shipping take?",
+      "When will I receive my order?",
+      "What is the delivery time?",
+      "How many days for shipping?",
+      "Order delivery duration?"
+    ],
+    "answer": "Shipping usually takes 3-5 business days."
+  },
+  {
+    "question": [
+      "How do I track my order?",
+      "Where is my package?",
+      "How can I check my order status?",
+      "Order tracking process?",
+      "Track my shipment"
+    ],
+    "answer": "Go to your orders page and click on 'Track Order' next to your purchase."
+  },
+  {
+    "question": [
+      "Can I change my shipping address after placing an order?",
+      "How to update delivery address?",
+      "Change address after order?",
+      "Edit shipping details post order?",
+      "Can I modify my address after buying?"
+    ],
+    "answer": "You can change your shipping address before the order is shipped by contacting support."
+  },
+  {
+    "question": [
+      "What are the terms and conditions?",
+      "Where can I read your terms?",
+      "What rules apply to purchases?",
+      "Terms for buying products?",
+      "Conditions for sale?"
+    ],
+    "answer": "Our terms and conditions include: 1) All sales are final. 2) Products must not be resold. 3) Use of the website constitutes acceptance of all terms. For full terms, visit our Terms & Conditions page."
+  },
+  {
+    "question": [
+      "What is your privacy policy?",
+      "How is my data handled?",
+      "Do you share my information?",
+      "Privacy details?",
+      "What happens to my personal info?"
+    ],
+    "answer": "We value your privacy. We do not share your personal information with third parties except as required by law. For details, see our Privacy Policy page."
+  }
+]
