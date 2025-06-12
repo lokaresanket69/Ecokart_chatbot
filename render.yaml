@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: ecokart-backend
+    env: python
+    # Directory containing backend
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    autoDeploy: true
+    envVars:
+      - key: TOGETHER_API_KEY
+        sync: false  # set in Render dashboard
+  - type: static
+    name: ecokart-frontend
+    env: static
+    rootDir: frontend-react
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    buildFilter: "**/*"
+    autoDeploy: true
+    buildEnvVars:
+      - key: VITE_BACKEND_URL
+        value: https://ecokart-backend.onrender.com

@@ -5,3 +5,4 @@ faiss-cpu
 gradio
 huggingface-hub
 sentence-transformers
+gunicorn
