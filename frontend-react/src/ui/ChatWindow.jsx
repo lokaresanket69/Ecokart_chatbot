@@ -9,6 +9,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import MessageBubble from './MessageBubble';
 import ParticlesBg from './ParticlesBg';
 
+const API_BASE = import.meta.env.PROD ? 'https://ecokart-api.onrender.com' : '';
+
 export default function ChatWindow() {
   const [messages, setMessages] = React.useState([]);
   const [input, setInput] = React.useState('');
@@ -23,7 +25,7 @@ export default function ChatWindow() {
     setInput('');
     setLoading(true);
     try {
-      const res = await fetch('/chat', {
+      const res = await fetch(`${API_BASE}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text }),
