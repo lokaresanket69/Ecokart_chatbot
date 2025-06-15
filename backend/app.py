@@ -8,45 +8,66 @@ from langchain.docstore.document import Document
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
-# Load Together.ai API key from environment variable
-TOGETHER_API_KEY = os.getenv("TOGETHER_API_KEY", "")
-if not TOGETHER_API_KEY:
-    raise ValueError("Please set your Together.ai API key in the TOGETHER_API_KEY environment variable.")
-
-# Base directory of this file
+# -------------------- Load FAQ data and build documents --------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-FAQ_PATH = os.path.join(BASE_DIR, "faqs_expanded.json")
-# Load expanded FAQs with paraphrased questions
-with open(FAQ_PATH, "r", encoding="utf-8") as f:
-    faqs = json.load(f)
+from glob import glob
 
-# Create one document per paraphrased question (case-insensitive)
-documents = []
+faqs = []
+for path in glob(os.path.join(BASE_DIR, "faqs*.json")):
+    with open(path, "r", encoding="utf-8") as f:
+        faqs.extend(json.load(f))
+
+# Build documents from all loaded FAQs
+documents: list[Document] = []
 for faq in faqs:
     questions = faq["question"] if isinstance(faq["question"], list) else [faq["question"]]
     for q in questions:
         documents.append(Document(page_content=q.strip().lower() + "\n" + faq["answer"]))
+# --------------------------------------------------------------------------
 
-# Initialize HuggingFace Embeddings
-embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+# -------------------- Load Together.ai API key --------------------
+from pathlib import Path
 
-# Build FAISS vector store
-vectorstore = FAISS.from_documents(documents, embeddings)
-retriever = vectorstore.as_retriever()
+def _load_key_from_dotenv():
+    dotenv = Path(__file__).with_name('.env')
+    if dotenv.exists():
+        for line in dotenv.read_text().splitlines():
+            if line.startswith('TOGETHER_API_KEY='):
+                return line.partition('=')[2].strip()
+    return ''
 
-# Initialize Together.ai Mixtral LLM
-llm = Together(
-    model="mistralai/Mixtral-8x7B-Instruct-v0.1",
-    temperature=0.2,
-    max_tokens=512,
-)
+# first try env var, else .env file
+TOGETHER_API_KEY = os.getenv("TOGETHER_API_KEY") or _load_key_from_dotenv()
+# --------------------------------------------------------------------------
+if not TOGETHER_API_KEY:
+    print("[Warning] TOGETHER_API_KEY not set – running in mock mode.\nResponding with a placeholder reply.")
+    def chatbot_fn(message, history):
+        return "(mock) Sorry, the language model is not configured on this machine."
+else:
+    os.environ["TOGETHER_API_KEY"] = TOGETHER_API_KEY  # make sure underlying libs see it
+    # Initialize HuggingFace Embeddings
+    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
-# Create RetrievalQA chain
-qa_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever, return_source_documents=False)
+    # Build FAISS vector store
+    vectorstore = FAISS.from_documents(documents, embeddings)
+    retriever = vectorstore.as_retriever()
 
-def chatbot_fn(message, history):
-    response = qa_chain.run(message)
-    return response
+    # Initialize Together.ai Mixtral LLM
+    llm = Together(
+        model="mistralai/Mixtral-8x7B-Instruct-v0.1",
+        temperature=0.2,
+        max_tokens=512,
+    )
+
+    # Create RetrievalQA chain
+    qa_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever, return_source_documents=False)
+
+    # define chatbot function using real QA chain
+    def chatbot_fn(message, history):
+        return qa_chain.run(message)
+
+
+
 
 # Create Flask app for JSON API
 STATIC_DIR = os.path.abspath(os.path.join(BASE_DIR, "../frontend"))
@@ -63,6 +84,8 @@ def chat_endpoint():
         response = chatbot_fn(message, [])
         return jsonify({"response": response})
     except Exception as e:
+        import traceback,sys
+        traceback.print_exc(file=sys.stdout)
         return jsonify({"error": str(e)}), 500
 
 @app.route("/")

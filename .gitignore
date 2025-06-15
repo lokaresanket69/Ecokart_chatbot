@@ -4,7 +4,10 @@ __pycache__/
 
 # Virtual environments
 venv/
+# ignore root .env
 .env
+# but allow backend specific env file
+!backend/.env
 
 # Node
 node_modules/
