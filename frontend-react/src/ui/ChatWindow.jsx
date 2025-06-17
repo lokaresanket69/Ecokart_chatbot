@@ -9,7 +9,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import MessageBubble from './MessageBubble';
 import ParticlesBg from './ParticlesBg';
 
-const API_BASE = import.meta.env.PROD ? 'https://ecokart-api.onrender.com' : '';
+// Always use same-origin backend; let the server/host decide the base URL.
+const API_BASE = '';
 
 export default function ChatWindow() {
   const [messages, setMessages] = React.useState([]);

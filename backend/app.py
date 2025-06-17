@@ -1,6 +1,12 @@
 import json
+print('[DEBUG] app.py imported, __name__ =', __name__)
 import os
-from langchain_community.vectorstores import FAISS
+# Prefer FAISS (fast) but it's unavailable on Windows.
+try:
+    from langchain_community.vectorstores import FAISS  # type: ignore
+except ModuleNotFoundError:
+    FAISS = None  # type: ignore
+    from langchain_community.vectorstores import Chroma  # type: ignore
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_together import Together
 from langchain.chains import RetrievalQA
@@ -48,8 +54,18 @@ else:
     # Initialize HuggingFace Embeddings
     embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
-    # Build FAISS vector store
-    vectorstore = FAISS.from_documents(documents, embeddings)
+        # Build vector store – prefer FAISS if it was imported successfully, otherwise use Chroma
+    if FAISS is not None:
+        try:
+            vectorstore = FAISS.from_documents(documents, embeddings)
+            print("[DEBUG] Using FAISS vector store")
+        except Exception as e:
+            print("[WARN] FAISS runtime error (", e, ") – falling back to Chroma", sep="")
+            from langchain_community.vectorstores import Chroma  # fallback import
+            vectorstore = Chroma.from_documents(documents, embeddings)
+    else:
+        from langchain_community.vectorstores import Chroma
+        vectorstore = Chroma.from_documents(documents, embeddings)
     retriever = vectorstore.as_retriever()
 
     # Initialize Together.ai Mixtral LLM
@@ -73,6 +89,7 @@ else:
 STATIC_DIR = os.path.abspath(os.path.join(BASE_DIR, "../frontend"))
 app = Flask(__name__, static_folder=STATIC_DIR, static_url_path="")
 CORS(app)
+print('[DEBUG] Flask app created')
 
 @app.route("/chat", methods=["POST"])
 def chat_endpoint():
@@ -98,6 +115,7 @@ def static_proxy(path):
     return send_from_directory(app.static_folder, path)
 
 if __name__ == "__main__":
+    print("[DEBUG] Starting Ecokart backend...")
     # Determine port based on environment variable for Render compatibility
     port = int(os.environ.get("PORT", 8000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port, use_reloader=False, debug=True)
