@@ -88,7 +88,8 @@ else:
 # Create Flask app for JSON API
 STATIC_DIR = os.path.abspath(os.path.join(BASE_DIR, "../frontend"))
 app = Flask(__name__, static_folder=STATIC_DIR, static_url_path="")
-CORS(app)
+# Allow any front-end origin to call the API (needed when front-end is on a different domain)
+CORS(app, resources={r"/*": {"origins": "*"}})
 print('[DEBUG] Flask app created')
 
 @app.route("/chat", methods=["POST"])
