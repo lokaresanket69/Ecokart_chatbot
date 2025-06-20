@@ -9,8 +9,9 @@ import CircularProgress from '@mui/material/CircularProgress';
 import MessageBubble from './MessageBubble';
 import ParticlesBg from './ParticlesBg';
 
-// Always use same-origin backend; let the server/host decide the base URL.
-const API_BASE = '';
+// Read backend base URL from build-time env var (set on Render as VITE_BACKEND_URL).
+// Fallback to empty string so that relative "/chat" hits same-origin (handled by Vite dev proxy locally).
+const API_BASE = import.meta.env.VITE_BACKEND_URL || '';
 
 export default function ChatWindow() {
   const [messages, setMessages] = React.useState([]);
