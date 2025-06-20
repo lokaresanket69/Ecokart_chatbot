@@ -92,7 +92,7 @@ app = Flask(__name__, static_folder=STATIC_DIR, static_url_path="")
 CORS(app, resources={r"/*": {"origins": "*"}})
 print('[DEBUG] Flask app created')
 
-@app.route("/chat", methods=["POST"])
+@app.route("/chat", methods=["POST", "OPTIONS"])
 def chat_endpoint():
     data = request.get_json(force=True)
     message = data.get("message", "")
