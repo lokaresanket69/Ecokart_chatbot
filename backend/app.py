@@ -2,11 +2,7 @@ import json
 print('[DEBUG] app.py imported, __name__ =', __name__)
 import os
 # Prefer FAISS (fast) but it's unavailable on Windows.
-try:
-    from langchain_community.vectorstores import FAISS  # type: ignore
-except ModuleNotFoundError:
-    FAISS = None  # type: ignore
-    from langchain_community.vectorstores import Chroma  # type: ignore
+from langchain_community.vectorstores import Chroma  # lighter, avoids FAISS memory
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_together import Together
 from langchain.chains import RetrievalQA
@@ -45,48 +41,32 @@ def _load_key_from_dotenv():
 # first try env var, else .env file
 TOGETHER_API_KEY = os.getenv("TOGETHER_API_KEY") or _load_key_from_dotenv()
 # --------------------------------------------------------------------------
+qa_chain = None  # will be initialised lazily
 if not TOGETHER_API_KEY:
     print("[Warning] TOGETHER_API_KEY not set – running in mock mode.\nResponding with a placeholder reply.")
     def chatbot_fn(message, history):
         return "(mock) Sorry, the language model is not configured on this machine."
 else:
     os.environ["TOGETHER_API_KEY"] = TOGETHER_API_KEY  # make sure underlying libs see it
-    # Initialize HuggingFace Embeddings
-    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-
-        # Build vector store – prefer FAISS if it was imported successfully, otherwise use Chroma
-    if FAISS is not None:
-        try:
-            vectorstore = FAISS.from_documents(documents, embeddings)
-            print("[DEBUG] Using FAISS vector store")
-        except Exception as e:
-            print("[WARN] FAISS runtime error (", e, ") – falling back to Chroma", sep="")
-            from langchain_community.vectorstores import Chroma  # fallback import
-            vectorstore = Chroma.from_documents(documents, embeddings)
-    else:
-        from langchain_community.vectorstores import Chroma
+    # Lazy-init embeddings & vector store only once
+    if qa_chain is None:
+        embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
         vectorstore = Chroma.from_documents(documents, embeddings)
-    retriever = vectorstore.as_retriever()
-
-    # Initialize Together.ai Mixtral LLM
-    llm = Together(
-        model="mistralai/Mixtral-8x7B-Instruct-v0.1",
-        temperature=0.2,
-        max_tokens=512,
-    )
-
-    # Create RetrievalQA chain
+        retriever = vectorstore.as_retriever()
+        llm = Together(
+            model="mistralai/Mixtral-8x7B-Instruct-v0.1",
+            temperature=0.2,
+            max_tokens=512,
+        )
+        qa_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever, return_source_documents=False)
     qa_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever, return_source_documents=False)
 
     # define chatbot function using real QA chain
     def chatbot_fn(message, history):
-        return qa_chain.run(message)
-
-
-
+        return qa_chain.run(message) if qa_chain else '(initialising...)'
 
 # Create Flask app for JSON API
-STATIC_DIR = os.path.abspath(os.path.join(BASE_DIR, "../frontend"))
+STATIC_DIR = os.path.abspath(os.path.join(BASE_DIR, "static"))
 app = Flask(__name__, static_folder=STATIC_DIR, static_url_path="")
 # Allow any front-end origin to call the API (needed when front-end is on a different domain)
 CORS(app, resources={r"/*": {"origins": "*"}})
