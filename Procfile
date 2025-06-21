@@ -1,1 +1,1 @@
-web: gunicorn backend.app:app --bind 0.0.0.0:$PORT
+web: gunicorn backend.app:app --workers 1 --threads 2 --bind 0.0.0.0:$PORT
