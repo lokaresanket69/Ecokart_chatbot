@@ -7,7 +7,7 @@ try:
 except ModuleNotFoundError:
     FAISS = None  # type: ignore
     from langchain_community.vectorstores import Chroma  # type: ignore
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_together import Together
 from langchain.chains import RetrievalQA
 from langchain.docstore.document import Document
