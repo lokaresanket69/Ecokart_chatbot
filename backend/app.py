@@ -1,12 +1,7 @@
 import json
 print('[DEBUG] app.py imported, __name__ =', __name__)
 import os
-# Prefer FAISS (fast) but it's unavailable on Windows.
-try:
-    from langchain_community.vectorstores import FAISS  # type: ignore
-except ModuleNotFoundError:
-    FAISS = None  # type: ignore
-    from langchain_community.vectorstores import Chroma  # type: ignore
+from langchain_community.vectorstores import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from together import Together
 from langchain.chains import RetrievalQA
@@ -53,19 +48,8 @@ else:
     os.environ["TOGETHER_API_KEY"] = TOGETHER_API_KEY  # make sure underlying libs see it
     # Initialize HuggingFace Embeddings with lighter model for memory optimization
     embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-MiniLM-L3-v2")
-
-        # Build vector store – prefer FAISS if it was imported successfully, otherwise use Chroma
-    if FAISS is not None:
-        try:
-            vectorstore = FAISS.from_documents(documents, embeddings)
-            print("[DEBUG] Using FAISS vector store")
-        except Exception as e:
-            print("[WARN] FAISS runtime error (", e, ") – falling back to Chroma", sep="")
-            from langchain_community.vectorstores import Chroma  # fallback import
-            vectorstore = Chroma.from_documents(documents, embeddings)
-    else:
-        from langchain_community.vectorstores import Chroma
-        vectorstore = Chroma.from_documents(documents, embeddings)
+    # Always use Chroma vectorstore for memory efficiency
+    vectorstore = Chroma.from_documents(documents, embeddings)
     retriever = vectorstore.as_retriever()
 
     # Initialize Together.ai Mixtral LLM
