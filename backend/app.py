@@ -3,7 +3,7 @@ print('[DEBUG] app.py imported, __name__ =', __name__)
 import os
 from langchain_community.vectorstores import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
-from together import Together
+from langchain_together import Together
 from langchain.chains import RetrievalQA
 from langchain.docstore.document import Document
 from flask import Flask, request, jsonify, send_from_directory
