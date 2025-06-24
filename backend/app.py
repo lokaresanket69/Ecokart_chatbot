@@ -8,7 +8,7 @@ except ModuleNotFoundError:
     FAISS = None  # type: ignore
     from langchain_community.vectorstores import Chroma  # type: ignore
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_together import Together
+from together import Together
 from langchain.chains import RetrievalQA
 from langchain.docstore.document import Document
 from flask import Flask, request, jsonify, send_from_directory
