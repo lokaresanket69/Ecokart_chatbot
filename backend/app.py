@@ -7,7 +7,7 @@ try:
 except ModuleNotFoundError:
     FAISS = None  # type: ignore
     from langchain_community.vectorstores import Chroma  # type: ignore
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from together import Together
 from langchain.chains import RetrievalQA
 from langchain.docstore.document import Document
@@ -51,8 +51,8 @@ if not TOGETHER_API_KEY:
         return "(mock) Sorry, the language model is not configured on this machine."
 else:
     os.environ["TOGETHER_API_KEY"] = TOGETHER_API_KEY  # make sure underlying libs see it
-    # Initialize HuggingFace Embeddings
-    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    # Initialize HuggingFace Embeddings with lighter model for memory optimization
+    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-MiniLM-L3-v2")
 
         # Build vector store – prefer FAISS if it was imported successfully, otherwise use Chroma
     if FAISS is not None:
